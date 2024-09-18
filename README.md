@@ -1,2 +1,2 @@
 # servicesdatabase
-Database for services selling, database contains views, procedures, transactions and triggers
+Database for selling services, database contains views, procedures, transactions and triggers
