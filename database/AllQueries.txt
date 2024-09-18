@@ -1,0 +1,530 @@
+CREATE TABLE Status (
+    StatusID INT IDENTITY(1,1) PRIMARY KEY,
+    StatusName VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE Roles (
+    RoleID INT IDENTITY(1,1) PRIMARY KEY,
+    RoleName VARCHAR(50) NOT NULL UNIQUE
+);
+CREATE TABLE PaymentMethods (
+    PaymentMethodID INT IDENTITY(1,1) PRIMARY KEY,
+    PaymentMethodName VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE Game (
+    GameID INT IDENTITY(1,1) PRIMARY KEY,
+    GameName VARCHAR(50) NOT NULL UNIQUE
+);
+CREATE TABLE PaymentStatus (
+    PaymentStatusID INT IDENTITY(1,1) PRIMARY KEY,
+    PaymentStatusName VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE Users (
+    UserID INT IDENTITY(1,1) PRIMARY KEY,
+    Username VARCHAR(50) NOT NULL UNIQUE,
+    PasswordHash VARCHAR(255) NOT NULL,
+	DiscordName VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    RegistrationDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    RoleID INT NOT NULL,
+    ReferralCode VARCHAR(50) NOT NULL UNIQUE,
+    FOREIGN KEY (RoleID) REFERENCES Roles(RoleID)
+);
+
+
+CREATE TABLE Services (
+    ServiceID INT IDENTITY(1,1) PRIMARY KEY,
+    ServiceName VARCHAR(50) NOT NULL,
+    ServiceType VARCHAR(50) NOT NULL,
+    Description TEXT,
+    Price DECIMAL(10, 2) NOT NULL
+);
+
+CREATE TABLE Coupons (
+    CouponID INT IDENTITY(1,1) PRIMARY KEY,
+    CouponCode VARCHAR(50) NOT NULL UNIQUE,
+    DiscountPercentage DECIMAL(5, 2) NOT NULL,
+    ExpiryDate DATETIME NOT NULL
+);
+
+CREATE TABLE Servers (
+    ServerID INT PRIMARY KEY,
+    ServerName VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE Orders (
+    OrderID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    ServiceID INT NOT NULL,
+    GameID INT NOT NULL,
+    ServerID INT NOT NULL,
+    StatusID INT NOT NULL,
+    OrderDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Price DECIMAL(10, 2) NOT NULL,
+    CouponID INT,
+    NumberOfGames INT,
+    NumberOfHours INT,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (ServiceID) REFERENCES Services(ServiceID),
+	FOREIGN KEY (GameID) REFERENCES Game(GameID),
+    FOREIGN KEY (CouponID) REFERENCES Coupons(CouponID),
+    FOREIGN KEY (StatusID) REFERENCES Status(StatusID),
+    FOREIGN KEY (ServerID) REFERENCES Servers(ServerID)
+);
+
+CREATE TABLE Payments (
+    PaymentID INT IDENTITY(1,1) PRIMARY KEY,
+    OrderID INT NOT NULL,
+    PaymentMethodID INT NOT NULL,
+    PaymentStatusID INT NOT NULL,
+    PaymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Amount DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (PaymentMethodID) REFERENCES PaymentMethods(PaymentMethodID),
+    FOREIGN KEY (PaymentStatusID) REFERENCES PaymentStatus(PaymentStatusID)
+);
+
+
+
+CREATE TABLE Referrals (
+    ReferralID INT IDENTITY(1,1) PRIMARY KEY,
+    ReferrerID INT NOT NULL,
+    ReferredUserID INT NOT NULL,
+    ReferralDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ReferrerID) REFERENCES Users(UserID),
+    FOREIGN KEY (ReferredUserID) REFERENCES Users(UserID)
+);
+
+CREATE TABLE OrderAssignments (
+    AssignmentID INT IDENTITY(1,1) PRIMARY KEY,
+    OrderID INT NOT NULL,
+    EmployeeID INT NOT NULL,
+    AssignedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    StatusID INT NOT NULL,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (EmployeeID) REFERENCES Users(UserID),
+    FOREIGN KEY (StatusID) REFERENCES Status(StatusID)
+);
+CREATE TABLE UserAudit (
+    AuditID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT,
+    OldUsername VARCHAR(50),
+    NewUsername VARCHAR(50),
+    OldEmail VARCHAR(100),
+    NewEmail VARCHAR(100),
+    ChangeDate DATETIME DEFAULT GETDATE(),
+    ChangedBy VARCHAR(50) -- This could be the username or ID of the admin who made the change
+);
+
+
+-- Sample Data
+INSERT INTO PaymentStatus (PaymentStatusName)
+VALUES 
+    ('pending'),
+    ('completed'),
+    ('failed');
+
+INSERT INTO PaymentMethods (PaymentMethodName)
+VALUES 
+    ('Credit Card'),
+    ('PayPal'),
+    ('Bank Transfer'),
+    ('Crypto'),
+    ('Cash');
+
+INSERT INTO Game (GameName)
+VALUES 
+    ('League of Legends'),
+    ('Valorant'),
+    ('Teamfight Tactics'),
+	('Counter Strike 2');
+
+INSERT INTO Status (StatusName)
+VALUES 
+    ('active'),
+    ('completed'),
+    ('canceled');
+
+INSERT INTO Roles (RoleName)
+VALUES 
+    ('Customer'),
+    ('Employee'),
+    ('Moderator'),
+    ('Administrator');
+
+INSERT INTO Users (Username, PasswordHash, DiscordName, Email, RoleID, ReferralCode)
+VALUES 
+    ('marko96', 'hashed_password_1', 'mare#1235', 'marko96@gmail.com', 1, 'REFSM1'),
+    ('stevica1', 'hashed_password_2', 'stevica#2224', 'stevica1@gmail.com', 2, 'REFSM2'),
+    ('nikola92', 'hashed_password_3', 'nikola#4444', 'nikola92@gmail.com', 1, 'REFSM3'),
+    ('misamrav', 'hashed_password_4','mrav#9523', 'mravic@gmail.com', 2, 'REFSM4'),
+    ('lotus', 'hashed_password_5','lotuss#2233', 'dusanlotus@gmail.com', 2, 'REFSM5'),
+    ('patkica', 'hashed_password_6','patan#1229', 'acapatkica@gmail.com', 3, 'REFSM6'),
+    ('filip', 'hashed_password_7','flifovich#0000', 'filipnrt4218@gs.viser.edu.rs', 4, 'REFSM7'),
+	('vladimir85', 'hashed_password_8', 'vlad#1239', 'vladimir85@gmail.com', 1, 'REFSM8'),
+	('jovana88', 'hashed_password_9', 'jovana#5678', 'jovana88@gmail.com', 1, 'REFSM9'),
+    ('milica77', 'hashed_password_10', 'milica#9101', 'milica77@gmail.com', 1, 'REFSM10'),
+	('william90', 'hashed_password_11', 'will#9087', 'william90@gmail.com', 1, 'REFSM11'),
+    ('lazar01', 'hashed_password_12', 'laz#0012', 'lazar01@gmail.com', 2, 'REFSM12'),
+    ('nadja92', 'hashed_password_13', 'nadja#4567', 'nadja92@gmail.com', 1, 'REFSM13'),
+    ('igor87', 'hashed_password_14', 'igor#8709', 'igor87@gmail.com', 1, 'REFSM14'),
+    ('petar78', 'hashed_password_15', 'petar#7890', 'petar78@gmail.com', 1, 'REFSM15');
+
+
+INSERT INTO Services (ServiceName, ServiceType, Description, Price)
+VALUES 
+    ('duo', 'playing', 'Play together with a partner', 20.00),
+    ('duo ultra', 'playing', 'Play together with a partner with enhanced features', 35.00),
+    ('duo pro', 'playing', 'Professional play with top-tier players', 50.00),
+    ('flex', 'playing', 'Flexible play options with multiple players', 25.00),
+    ('copilot', 'coaching', 'Get guidance while playing', 25.00),
+    ('vod review', 'coaching', 'Get a detailed review of your gameplay video', 25.00);
+
+INSERT INTO Coupons (CouponCode, DiscountPercentage, ExpiryDate)
+VALUES 
+    ('SAVE10', 10, '2024-12-31'),
+    ('WELCOME20', 20, '2024-07-30'),
+    ('SPRING15', 15, '2024-04-30'),
+    ('FALL5', 5, '2024-11-30');
+
+INSERT INTO Servers (ServerID, ServerName)
+VALUES 
+    (1, 'EUW'),
+    (2, 'EUNE'),
+    (3, 'NA'),
+    (4, 'TR'),
+    (5, 'BR');
+
+INSERT INTO Orders (UserID, ServiceID, GameID, ServerID, StatusID, OrderDate, Price, CouponID, NumberOfGames, NumberOfHours)
+VALUES 
+    (1, 1, 3, 1, 2, '2024-05-01 10:00:00', 18.00, '1', 5, NULL),
+    (2, 3, 4, 2, 1, '2024-05-02 14:00:00', 40.00, '2', 2, NULL),
+    (1, 2, 4, 3, 1, '2024-05-03 09:30:00', 31.50, '2', 3, NULL),
+    (3, 4, 1, 4, 2, '2024-05-04 16:00:00', 25.00, NULL, 10, NULL),
+    (2, 5, 1, 5, 2, '2024-05-05 11:45:00', 50.00, '4', NULL, 5),
+    (3, 6, 2, 1, 1, '2024-05-06 13:15:00', 22.50, '3', NULL, 1),
+	(4, 1, 2, 3, 1, '2024-06-01 11:00:00', 20.00, 1, 3, NULL),
+    (5, 3, 1, 1, 2, '2024-06-02 15:30:00', 45.00, 2, 5, NULL),
+    (6, 2, 3, 4, 2, '2024-06-03 10:45:00', 30.00, NULL, 4, NULL),
+    (7, 4, 1, 2, 3, '2024-06-04 14:20:00', 50.00, 3, NULL, 8),
+    (8, 5, 2, 5, 1, '2024-06-05 16:30:00', 25.00, 4, NULL, 3),
+    (9, 6, 4, 1, 2, '2024-06-06 18:00:00', 25.00, NULL, NULL, 2),
+    (10, 1, 1, 3, 3, '2024-06-07 13:10:00', 22.50, 1, 1, NULL),
+    (11, 3, 2, 4, 1, '2024-06-08 12:30:00', 40.00, 2, 2, NULL),
+    (12, 2, 4, 5, 2, '2024-06-09 09:00:00', 35.00, 3, 4, NULL),
+    (13, 5, 3, 1, 2, '2024-06-10 17:45:00', 50.00, 4, NULL, 6);
+
+INSERT INTO Payments (OrderID, PaymentMethodID, PaymentStatusID, Amount)
+VALUES 
+    (1, 1, 1, 18.00),
+    (2, 2, 1, 40.00),
+    (3, 2, 2, 31.50),
+    (4, 2, 2, 25.00),
+    (5, 5, 2, 50.00),
+	(6, 2, 1, 22.50),
+	(7, 2, 1, 50.00),
+    (8, 3, 2, 25.00),
+    (9, 4, 2, 25.00),
+    (10, 5, 1, 22.50),
+    (11, 1, 1, 40.00),
+    (12, 2, 2, 35.00),
+    (13, 3, 2, 50.00),
+    (4, 1, 2, 18.00),
+    (5, 5, 2, 50.00),
+    (6, 2, 1, 22.50);
+
+INSERT INTO Referrals (ReferrerID, ReferredUserID, ReferralDate)
+VALUES
+(1, 2, '2024-05-01 12:00:00'),
+(1, 3, '2024-05-02 14:30:00'),
+(1, 4, '2024-05-05 09:45:00'),
+(2, 5, '2024-05-06 12:00:00'),
+(2, 6, '2024-05-06 14:30:00'),
+(2, 7, '2024-05-07 09:45:00'),
+(3, 8, '2024-06-01 12:00:00'),
+(3, 9, '2024-06-02 14:30:00'),
+(4, 10, '2024-06-05 09:45:00'),
+(5, 11, '2024-06-06 12:00:00'),
+(6, 12, '2024-06-06 14:30:00'),
+(7, 13, '2024-06-07 09:45:00');
+
+INSERT INTO OrderAssignments (OrderID, EmployeeID, AssignedDate, StatusID)
+VALUES
+(1, 4, '2024-05-01 10:00:00', 2), -- StatusID 2 - 'completed'
+(2, 2, '2024-05-02 14:00:00', 1), -- StatusID 1 - 'active'
+(3, 4, '2024-05-03 09:30:00', 1),
+(4, 2, '2024-05-04 16:00:00', 2),
+(5, 4, '2024-05-05 11:45:00', 2),
+(6, 5, '2024-05-06 13:15:00', 1),
+(7, 2, '2024-06-01 10:00:00', 1),
+(8, 5, '2024-06-02 14:00:00', 2),
+(9, 4, '2024-06-03 09:30:00', 2),
+(10, 2, '2024-06-04 16:00:00', 1),
+(11, 4, '2024-06-05 11:45:00', 2),
+(12, 5, '2024-06-06 13:15:00', 1),
+(13, 4, '2024-06-07 12:00:00', 1),
+(14, 2, '2024-05-01 10:00:00', 2),
+(15, 5, '2024-05-02 14:00:00', 1),
+(16, 4, '2024-05-03 09:30:00', 1);
+
+------------Pogledi---------------
+Create View viewPlayingOrdersActive as
+select * from orders where ServiceID in('1','2','3','4') and statusID = '1';
+----------------------------------
+Create View viewCoachingOrdersActive as
+select * from orders where ServiceID in('5','6') and statusID = '1';
+----------------------------------
+CREATE VIEW viewEmployeeEarnings AS
+SELECT 
+    u.UserID AS EmployeeID,
+    u.Username AS EmployeeName,
+    SUM(o.Price * 0.80) AS TotalPayment
+FROM 
+    OrderAssignments oa
+JOIN 
+    Orders o ON oa.OrderID = o.OrderID
+JOIN 
+    Users u ON oa.EmployeeID = u.UserID
+JOIN 
+    Status s ON oa.StatusID = s.StatusID
+WHERE 
+    s.StatusName = 'completed' AND u.RoleID = (SELECT RoleID FROM Roles WHERE RoleName = 'Employee')
+GROUP BY 
+    u.UserID, u.Username;
+---------------------------------
+
+----------Funkcije---------------
+CREATE FUNCTION GetOrderInfo(@OrderID INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        u.UserID AS EmployeeID,
+        u.Username AS EmployeeName,
+        oa.OrderID,
+        o.ServiceID,
+        o.GameID,
+        o.ServerID,
+        o.StatusID,
+        o.OrderDate,
+        o.Price,
+        s.StatusName
+    FROM 
+        OrderAssignments oa
+    JOIN 
+        Orders o ON oa.OrderID = o.OrderID
+    JOIN 
+        Users u ON oa.EmployeeID = u.UserID
+    JOIN 
+        Status s ON o.StatusID = s.StatusID
+    WHERE 
+        oa.OrderID = @OrderID AND u.RoleID = (SELECT RoleID FROM Roles WHERE RoleName = 'Employee')
+);
+
+Primer - select * from GetOrderInfo(4)
+--------------------------------
+CREATE FUNCTION GetReferralCount(@UserID INT)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @ReferralCount INT;
+    
+    SELECT @ReferralCount = COUNT(*) FROM Referrals WHERE ReferrerID = @UserID;
+    
+    RETURN @ReferralCount;
+END;
+
+Primer 1- Select dbo.GetReferralCount(7) As ReferralCount
+
+Primer 2 -Select
+	u.UserID,
+	u.Username,
+	dbo.getreferralcount(u.userID) as ReferralCount
+From users u
+-----------------------------------
+
+CREATE FUNCTION GetTotalAmountSpentByCustomer(@UserID INT)
+RETURNS DECIMAL(10, 2)
+AS
+BEGIN
+    DECLARE @TotalAmount DECIMAL(10, 2);
+
+    SELECT @TotalAmount = SUM(o.Price)
+    FROM Orders o
+    WHERE o.UserID = @UserID;
+
+    RETURN ISNULL(@TotalAmount, 0);
+END;
+
+SELECT dbo.GetTotalAmountSpentByCustomer(1) AS TotalSpent;
+------------------------------------
+Create FUNCTION GetEmployeeTotalPayment(@EmployeeID INT)
+RETURNS DECIMAL(10, 2)
+AS
+BEGIN
+    DECLARE @TotalPayment DECIMAL(10, 2);
+
+    -- Calculate the total payment for completed orders
+    SELECT @TotalPayment = SUM(o.Price * 0.80)
+    FROM Orders o
+    JOIN OrderAssignments oa ON o.OrderID = oa.OrderID
+    JOIN Status s ON o.StatusID = s.StatusID
+    WHERE oa.EmployeeID = @EmployeeID AND s.StatusName = 'completed';
+
+    RETURN ISNULL(@TotalPayment, 0);
+END;
+
+-- Example usage
+SELECT dbo.GetEmployeeTotalPayment(5) AS TotalPayment;
+------------PROCEDURES-------------
+Same for Active orders just in where clause = active
+CREATE PROCEDURE GetOrdersFromLast30Days
+AS
+BEGIN
+    SELECT 
+        o.OrderID,
+        o.UserID,
+        u.Username,
+        o.ServiceID,
+        s.ServiceName,
+        o.GameID,
+        g.GameName,
+        o.ServerID,
+        sr.ServerName,
+        o.StatusID,
+        st.StatusName,
+        o.OrderDate,
+        o.Price,
+        o.CouponID,
+        c.CouponCode,
+        o.NumberOfGames,
+        o.NumberOfHours
+    FROM 
+        Orders o
+    JOIN 
+        Users u ON o.UserID = u.UserID
+    JOIN 
+        Services s ON o.ServiceID = s.ServiceID
+    JOIN 
+        Game g ON o.GameID = g.GameID
+    JOIN 
+        Servers sr ON o.ServerID = sr.ServerID
+    JOIN 
+        Status st ON o.StatusID = st.StatusID
+    LEFT JOIN 
+        Coupons c ON o.CouponID = c.CouponID
+    WHERE 
+        o.OrderDate >= DATEADD(DAY, -30, GETDATE())
+        AND o.OrderDate < GETDATE()
+END;
+
+
+exec GetActiveOrdersFromLast30Days or exec GetOrdersFromLast30Days
+------------------------------------------------
+CREATE PROCEDURE GetOrdersByEmployee
+    @EmployeeUsername VARCHAR(50)
+AS
+BEGIN
+    SELECT 
+        o.OrderID,
+        o.UserID,
+        u.Username AS CustomerName,
+        o.ServiceID,
+        s.ServiceName,
+        o.GameID,
+        g.GameName,
+        o.ServerID,
+        sr.ServerName,
+        o.StatusID,
+        st.StatusName,
+        o.OrderDate,
+        o.Price,
+        o.CouponID,
+        c.CouponCode,
+        o.NumberOfGames,
+        o.NumberOfHours,
+        oa.EmployeeID,
+        e.Username AS EmployeeName
+    FROM 
+        Orders o
+    JOIN 
+        Users u ON o.UserID = u.UserID
+    JOIN 
+        Services s ON o.ServiceID = s.ServiceID
+    JOIN 
+        Game g ON o.GameID = g.GameID
+    JOIN 
+        Servers sr ON o.ServerID = sr.ServerID
+    JOIN 
+        Status st ON o.StatusID = st.StatusID
+    LEFT JOIN 
+        Coupons c ON o.CouponID = c.CouponID
+    LEFT JOIN 
+        OrderAssignments oa ON o.OrderID = oa.OrderID
+    LEFT JOIN 
+        Users e ON oa.EmployeeID = e.UserID
+    WHERE 
+        e.Username = @EmployeeUsername;
+END;
+
+EXEC GetOrdersByEmployee @EmployeeUsername = 'lotus'
+----------------------------------------------------
+CREATE PROCEDURE GetCanceledPayments
+AS
+BEGIN
+    SELECT 
+        p.PaymentID,
+        p.OrderID,
+        o.UserID,
+        u.Username AS CustomerName,
+        p.PaymentMethodID,
+        pm.PaymentMethodName,
+        p.PaymentStatusID,
+        ps.PaymentStatusName,
+        p.PaymentDate,
+        p.Amount
+    FROM 
+        Payments p
+    JOIN 
+        PaymentStatus ps ON p.PaymentStatusID = ps.PaymentStatusID
+    JOIN 
+        PaymentMethods pm ON p.PaymentMethodID = pm.PaymentMethodID
+    JOIN 
+        Orders o ON p.OrderID = o.OrderID
+    JOIN 
+        Users u ON o.UserID = u.UserID
+    WHERE 
+        ps.PaymentStatusName = 'canceled';
+END;
+
+EXEC GetCanceledPayments;
+---------------TRIGERS------------
+
+
+CREATE TRIGGER trg_AuditUserUpdates
+ON Users
+AFTER UPDATE
+AS
+BEGIN
+    -- Insert old and new values into the UserAudit table
+    INSERT INTO UserAudit (UserID, OldUsername, NewUsername, OldEmail, NewEmail, ChangeDate, ChangedBy)
+    SELECT 
+        d.UserID,
+        d.Username AS OldUsername,
+        i.Username AS NewUsername,
+        d.Email AS OldEmail,
+        i.Email AS NewEmail,
+        GETDATE() AS ChangeDate,
+        SUSER_SNAME() AS ChangedBy -- or SYSTEM_USER for the current database user
+    FROM 
+        INSERTED i
+    JOIN 
+        DELETED d ON i.UserID = d.UserID;
+END;
+
+UPDATE Users
+SET Username = 'steva', Email = 'steva@gmail.com'
+WHERE UserID = 2;
